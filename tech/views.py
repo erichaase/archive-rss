@@ -1,3 +1,5 @@
+from __future__ import division
+
 import urllib2
 import xml.etree.ElementTree
 import datetime
@@ -6,15 +8,17 @@ import re
 from tech.models import Post, LikeWordCount, DislikeWordCount
 from django.shortcuts import render_to_response
 
-def index(request):
+def index (request):
     update()
     return render_to_response('index.html', {
-        'posts'    : Post.objects.all().order_by('date'),
+        'posts'    : Post.objects.all().order_by('-rating'),
         'likes'    : LikeWordCount.objects.all().order_by('-count'),
         'dislikes' : DislikeWordCount.objects.all(),
         })
 
 def update():
+    for x in Post.objects.all():
+        x.delete()
     getPosts()
 
 def getPosts():
@@ -48,14 +52,34 @@ def getSlashdot():
                 attr['date']  = datetime.date(year,month,day)
         addPost(attr)
 
-def addPost(a):
-    # calculate rating here
+def addPost (a):
     if len(Post.objects.filter(link=a['link'])) == 0:
-        Post(source=a['source'], title=a['title'], desc=a['desc'], link=a['link'], date=a['date']).save()
+        Post(source=a['source'], title=a['title'], desc=a['desc'], link=a['link'], date=a['date'], rating=getRating(a['title'])).save()
 
-'''
-        for word in re.findall(r"[a-zA-Z0-9_\.\+]+",title):
-            if likicity.has_key(word):
-                total += (likicity[word] - 0.5)
-        print total, title
-'''
+def getRating (title):
+    ratings = []
+    for word in re.findall(r"[a-zA-Z0-9_\.\+]+", title.strip().lower()):
+        lwc = LikeWordCount.objects.filter(word=word)
+        if len(lwc) == 0:
+            lwc = 0
+        else:
+            lwc = lwc[0].count
+
+        dwc = DislikeWordCount.objects.filter(word=word)
+        if len(dwc) == 0:
+            dwc = 0
+        else:
+            dwc = dwc[0].count
+
+        if lwc + dwc != 0:
+            ratings.append(lwc / (lwc + dwc) - 0.5)
+
+    if len(ratings) == 0:
+        print 0, title
+        return 0
+    else:
+        total = 0
+        for x in ratings:
+            total += x
+        print (total / len(ratings)) * 100, title
+        return (total / len(ratings)) * 100
