@@ -3,3 +3,4 @@ __init__.py
 /manage.py
 /settings.py
 /data.db
+*.json

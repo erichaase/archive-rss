@@ -57,29 +57,33 @@ def addPost (a):
         Post(source=a['source'], title=a['title'], desc=a['desc'], link=a['link'], date=a['date'], rating=getRating(a['title'])).save()
 
 def getRating (title):
-    ratings = []
+    p = []
     for word in re.findall(r"[a-zA-Z0-9_\.\+]+", title.strip().lower()):
         lwc = LikeWordCount.objects.filter(word=word)
         if len(lwc) == 0:
             lwc = 0
         else:
             lwc = lwc[0].count
+	lwc = float(lwc)
 
         dwc = DislikeWordCount.objects.filter(word=word)
         if len(dwc) == 0:
             dwc = 0
         else:
             dwc = dwc[0].count
+	dwc = float(dwc)
 
         if lwc + dwc != 0:
-            ratings.append(lwc / (lwc + dwc) - 0.5)
+            p.append(lwc / (lwc + dwc))
 
-    if len(ratings) == 0:
-        print 0, title
-        return 0
-    else:
-        total = 0
-        for x in ratings:
-            total += x
-        print (total / len(ratings)) * 100, title
-        return (total / len(ratings)) * 100
+    if len(p) == 0:
+        return 50
+
+    a = 1.0
+    b = 1.0
+    for x in p:
+        a *= x
+	b *= (1.0 - x)
+    if a + b == 0:
+        return 50
+    return int((a / (a + b) ) * 100)
