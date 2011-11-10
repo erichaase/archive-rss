@@ -45,10 +45,10 @@ def getSlashdot():
             elif e.tag == '{%s}origLink' % ns2:
                 attr['link'] = e.text
             elif e.tag == '{%s}date' % ns3:
-	        m     = re.match(r"^\s*(\d\d\d\d)-(\d\d)-(\d\d)T",e.text)
-		year  = int(m.group(1))
-		month = int(m.group(2))
-		day   = int(m.group(3))
+                m     = re.match(r"^\s*(\d\d\d\d)-(\d\d)-(\d\d)T",e.text)
+                year  = int(m.group(1))
+                month = int(m.group(2))
+                day   = int(m.group(3))
                 attr['date']  = datetime.date(year,month,day)
         addPost(attr)
 
@@ -56,6 +56,7 @@ def addPost (a):
     if len(Post.objects.filter(link=a['link'])) == 0:
         Post(source=a['source'], title=a['title'], desc=a['desc'], link=a['link'], date=a['date'], rating=getRating(a['title'])).save()
 
+# see http://en.wikipedia.org/wiki/Bayesian_spam_filtering#Mathematical_foundation for more details
 def getRating (title):
     p = []
     for word in re.findall(r"[a-zA-Z0-9_\.\+]+", title.strip().lower()):
@@ -64,17 +65,19 @@ def getRating (title):
             lwc = 0
         else:
             lwc = lwc[0].count
-	lwc = float(lwc)
+        lwc = float(lwc)
 
         dwc = DislikeWordCount.objects.filter(word=word)
         if len(dwc) == 0:
             dwc = 0
         else:
             dwc = dwc[0].count
-	dwc = float(dwc)
+        dwc = float(dwc)
 
         if lwc + dwc != 0:
-            p.append(lwc / (lwc + dwc))
+            s = 3.0
+            r = (s / 2 + lwc) / (s + lwc + dwc)
+            p.append(r)
 
     if len(p) == 0:
         return 50
@@ -83,7 +86,7 @@ def getRating (title):
     b = 1.0
     for x in p:
         a *= x
-	b *= (1.0 - x)
+        b *= (1.0 - x)
     if a + b == 0:
         return 50
     return int((a / (a + b) ) * 100)
