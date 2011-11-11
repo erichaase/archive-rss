@@ -43,7 +43,7 @@ class Command(BaseCommand):
             if len(Post.objects.filter(link=a['link'])) == 0:
                 post.save()
             else:
-                self.stderr.write("The following post already exists: " + unicode(post) + "\n")
+                self.stdout.write("The following post already exists: " + str(post) + "\n")
 
 '''
         for poll_id in args:
