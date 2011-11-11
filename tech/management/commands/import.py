@@ -27,14 +27,14 @@ class Command(BaseCommand):
     help = 'Import posts from various RSS feeds'
 
     def handle (self, *args, **options):
-        feeds = [ 'http://feeds.feedburner.com/readwriteweb',
-                  'http://feeds.feedburner.com/TechCrunch/',
-                  #'http://feeds.feedburner.com/oreilly/radar/atom',
-                  'http://feeds.arstechnica.com/arstechnica/index?format=xml',
-                  #'http://rss.slashdot.org/Slashdot/slashdot',
+        feeds = [ [ 'http://feeds.feedburner.com/readwriteweb',                  ''                            ],
+                  [ 'http://feeds.feedburner.com/TechCrunch/',                   ''                            ],
+                  [ 'http://feeds.feedburner.com/oreilly/radar/atom',            'http://www.w3.org/2005/Atom' ],
+                  [ 'http://feeds.arstechnica.com/arstechnica/index?format=xml', ''                            ],
+                  [ 'http://rss.slashdot.org/Slashdot/slashdot',                 'http://purl.org/rss/1.0/'    ],
                 ]
 
-        postAttrs = slashdot()
+        postAttrs = []
         for feed in feeds:
             postAttrs += feedburner(feed)
 
@@ -54,20 +54,32 @@ class Command(BaseCommand):
 '''
 
 def feedburner (feed):
-    html = urllib2.urlopen(feed).read()
+    html = urllib2.urlopen(feed[0]).read()
     rss = xml.etree.ElementTree.XML(html)
     #xml.etree.ElementTree.dump(rss)
 
-    source = rss.find('./channel/title').text
+    if len(feed[1]) == 0:
+        ns = ''
+    else:
+        ns = '{%s}' % feed[1]
 
-    print source
+    source = rss.find('./%schannel/%stitle' % (ns,ns))
+    if source != None:
+        source = source.text
+    else:
+        source = rss.find('./%stitle' % ns).text
+
+    source = re.match(r"[a-zA-Z0-9_\s']+",source).group(0).strip()
+
     postAttrs = []
-    for item in rss.findall('./channel/item'):
-        attr = { 'source': source}
+    for item in rss.findall('./channel/%sitem' % ns) + rss.findall('./%sitem' % ns) + rss.findall('./%sentry' % ns):
+        attr = { 'source': source }
         for e in item:
-            if e.tag == 'title':
+            if e.tag == '%stitle' % ns:
                 attr['title'] = e.text
-            elif e.tag == 'description':
+            elif e.tag == '%sdescription' % ns:
+                attr['desc'] = e.text
+            elif e.tag == '%scontent' % ns:
                 attr['desc'] = e.text
             elif e.tag == '{http://rssnamespace.org/feedburner/ext/1.0}origLink':
                 attr['link'] = e.text
@@ -77,34 +89,8 @@ def feedburner (feed):
                 month = months[m.group(2).strip().lower()]
                 year  = int(m.group(3))
                 attr['date']  = datetime.date(year,month,day)
-        print attr['title']
-        postAttrs.append(attr)
-    print
-    return postAttrs
-
-def slashdot():
-    html = urllib2.urlopen('http://rss.slashdot.org/Slashdot/slashdot').read()
-    rss = xml.etree.ElementTree.XML(html)
-    #xml.etree.ElementTree.dump(rss)
-
-    ns1 = 'http://purl.org/rss/1.0/'
-    ns2 = 'http://rssnamespace.org/feedburner/ext/1.0'
-    ns3 = 'http://purl.org/dc/elements/1.1/'
-
-    source = rss.find('./{%s}channel/{%s}title' % (ns1,ns1)).text
-
-    postAttrs = []
-    for item in rss.findall('./{%s}item' % ns1):
-        attr = { 'source': source}
-        for e in item:
-            if e.tag == '{%s}title' % ns1:
-                attr['title'] = e.text
-            elif e.tag == '{%s}description' % ns1:
-                attr['desc'] = e.text
-            elif e.tag == '{%s}origLink' % ns2:
-                attr['link'] = e.text
-            elif e.tag == '{%s}date' % ns3:
-                m     = re.match(r"^\s*(\d\d\d\d)-(\d\d)-(\d\d)T",e.text)
+            elif e.tag == '{http://purl.org/dc/elements/1.1/}date' or e.tag == '%spublished' % ns:
+                m     = re.match(r"\s*(\d\d\d\d)-(\d\d)-(\d\d)T",e.text)
                 year  = int(m.group(1))
                 month = int(m.group(2))
                 day   = int(m.group(3))
