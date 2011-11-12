@@ -6,4 +6,4 @@ class Command(BaseCommand):
 
     def handle (self, *args, **options):
         for post in Post.objects.all():
-	    post.delete()
+            post.delete()

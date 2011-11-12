@@ -13,12 +13,12 @@ class Post (models.Model):
 
 class LikeWordCount (models.Model):
     word  = models.CharField(max_length=256, unique=True)
-    count = models.PositiveIntegerField(default=0)
+    count = models.PositiveIntegerField()
     def __unicode__ (self):
         return unicode(self.word) + unicode(": ") + unicode(self.count)
 
 class DislikeWordCount (models.Model):
     word  = models.CharField(max_length=256, unique=True)
-    count = models.PositiveIntegerField(default=0)
+    count = models.PositiveIntegerField()
     def __unicode__ (self):
         return unicode(self.word) + unicode(": ") + unicode(self.count)
