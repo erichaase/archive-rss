@@ -76,21 +76,21 @@ def feedburner (feed):
         attr = { 'source': source }
         for e in item:
             if e.tag == '%stitle' % ns:
-                attr['title'] = e.text
+                attr['title'] = e.text.strip()
             elif e.tag == '%sdescription' % ns:
-                attr['desc'] = e.text
+                attr['desc'] = e.text.strip()
             elif e.tag == '%scontent' % ns:
-                attr['desc'] = e.text
+                attr['desc'] = e.text.strip()
             elif e.tag == '{http://rssnamespace.org/feedburner/ext/1.0}origLink':
-                attr['link'] = e.text
+                attr['link'] = e.text.strip()
             elif e.tag == 'pubDate':
-                m     = re.search(r'(\d+)\s+(\w+)\s+(\d+)',e.text)
+                m     = re.search(r'(\d+)\s+(\w+)\s+(\d+)',e.text.strip())
                 day   = int(m.group(1))
                 month = months[m.group(2).strip().lower()]
                 year  = int(m.group(3))
                 attr['date']  = datetime.date(year,month,day)
             elif e.tag == '{http://purl.org/dc/elements/1.1/}date' or e.tag == '%spublished' % ns:
-                m     = re.match(r"\s*(\d\d\d\d)-(\d\d)-(\d\d)T",e.text)
+                m     = re.match(r"\s*(\d\d\d\d)-(\d\d)-(\d\d)T",e.text.strip())
                 year  = int(m.group(1))
                 month = int(m.group(2))
                 day   = int(m.group(3))
