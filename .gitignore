@@ -3,3 +3,4 @@ __init__.py
 /manage.py
 /settings.py
 /logs
+include/jquery-1.7.min.js

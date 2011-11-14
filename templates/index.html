@@ -1,9 +1,26 @@
-{% if posts %}
-    <ul>
-    {% for post in posts %}
-        <li>{{ post.rating }}: <a href="{{ post.link }}">{{ post.title }}</a> ({{ post.source}})</li>
-    {% endfor %}
-    </ul>
-{% else %}
-    <p>No posts are available.</p>
-{% endif %}
+<!doctype html>
+<html lang=en>
+
+<head>
+  <title>Technology</title>
+  <meta charset=utf-8>
+  <meta name="viewport" content="width=320; initial-scale=1.0; minimum-scale=1.0; maximum-scale=1.0; user-scalable=0;" />
+  <script type="text/javascript" src="/include/jquery-1.7.min.js"></script> 
+  <script language="javascript" src="/include/application.js"></script>
+  <link rel="stylesheet" type="text/css" href="/include/main.css" />
+</head>
+
+<body ontouchmove="BlockMove(event);">
+
+<table>
+<tr>
+  <td id="post" colspan=2 onclick="anchor();"></td>
+</tr>
+<tr>
+  <td id="dislike" onclick="dislike();"></td>
+  <td id="like" onclick="like();"></td>
+</tr>
+</table>
+
+</body>
+</html>

@@ -5,5 +5,5 @@ class Command(BaseCommand):
     help = 'Clear posts database'
 
     def handle (self, *args, **options):
-        for post in Post.objects.all().order_by('-rating'):
+        for post in Post.objects.filter(like=None).order_by('-rating'):
             self.stdout.write(str(post) + "\n")
