@@ -5,3 +5,4 @@ __init__.py
 /logs
 include/jquery-1.7.min.js
 data.db
+data-backup.db

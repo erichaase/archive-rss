@@ -25,7 +25,7 @@ months = {
 
 class Command(BaseCommand):
     args = '[filename namespace]'
-    help = 'Import posts from various RSS feeds'
+    help = 'Import posts from rss feed(s)'
 
     def handle (self, *args, **options):
         posts = []

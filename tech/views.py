@@ -9,7 +9,7 @@ def index (request):
     return render_to_response('index.html')
 
 def posts (request):
-    data = serializers.serialize('json', Post.objects.filter(like=None).order_by('-rating'), ensure_ascii=False, fields=('source', 'title', 'link', 'date', 'rating'))
+    data = serializers.serialize('json', Post.objects.filter(like=None).order_by('-rating')[:50], ensure_ascii=False, fields=('source', 'title', 'link', 'date', 'rating'))
     return HttpResponse(data)
 
 def like (request, pk):
