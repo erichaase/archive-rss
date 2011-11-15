@@ -8,8 +8,10 @@ class Command(BaseCommand):
 
     def handle (self, *args, **options):
         for post in Post.objects.all():
-            post.rating = getRating(post.title)
-	    post.save()
+            rating = getRating(post.title)
+            if rating != post.rating:
+                post.rating = rating
+                post.save()
 
 # see http://en.wikipedia.org/wiki/Bayesian_spam_filtering#Mathematical_foundation for more details
 def getRating (title):

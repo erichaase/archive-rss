@@ -58,7 +58,11 @@ class Command(BaseCommand):
         if source != None:
             source = source.text
         else:
-            source = rss.find('./%stitle' % ns).text
+            source = rss.find('./%stitle' % ns)
+            if source != None:
+                source = source.text
+            else:
+                raise CommandError("unable to extract 'source' value")
 
         source = re.match(r"[a-zA-Z0-9_\s']+",source).group(0).strip()
 
